@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="implementation-suite.xml" />
+	<munit:test name="newRelicAndSqsCreateFlow-test" doc:id="8b75ff9c-b329-4954-8985-d0a72de1aa5c" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Create queue" doc:id="bf6a1855-f700-4c3d-9ad4-eeb8ed52f783" processor="sqs:create-queue">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="f6b7f43c-77fe-4f16-beff-df8459fd2b14" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output text/plain --- readUrl('classpath://newRelicAndSqsCreateFlowtest\mock_payload.dwl')]" mediaType="text/plain" encoding="UTF-8" />
+					<munit-tools:attributes value="#[readUrl('classpath://newRelicAndSqsCreateFlowtest\mock_attributes.dwl')]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="5e6eedce-2257-4ff0-a8c6-bc2f1d45b869" >
+				<munit:payload value="#[readUrl('classpath://newRelicAndSqsCreateFlowtest\set-event_payload.dwl')]" encoding="UTF-8" />
+				<munit:attributes value="#[readUrl('classpath://newRelicAndSqsCreateFlowtest\set-event_attributes.dwl')]" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to newRelicAndSqsCreateFlow" doc:id="abf8b0a2-88f5-403d-b4a0-e6407df46ec8" name="newRelicAndSqsCreateFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="96130187-fe61-4ced-8a87-2a1d19d76d02" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import newRelicAndSqsCreateFlowtest::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sendMessageToQueue-test" doc:id="092e9955-0e95-4771-bf8f-3bf3162c6878" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Send message" doc:id="a3263af7-9264-4b6b-8721-2fbaf61ad51a" processor="sqs:send-message">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="83fa486d-21d7-494c-a99e-35847f2c0138" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/java --- readUrl('classpath://sendMessageToQueuetest\mock_payload.dwl')]" mediaType="application/java" encoding="UTF-8" />
+					<munit-tools:attributes value="#[readUrl('classpath://sendMessageToQueuetest\mock_attributes.dwl')]" />
+					<munit-tools:variables >
+						<munit-tools:variable key="message" value="#[output application/java --- readUrl('classpath://sendMessageToQueuetest\mock_variable_.dwl')]" mediaType="application/java" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="889b22eb-9d05-4c96-9dd5-1bfb4de285c4" >
+				<munit:payload value="#[readUrl('classpath://sendMessageToQueuetest\set-event_payload.dwl')]" encoding="UTF-8" />
+				<munit:attributes value="#[readUrl('classpath://sendMessageToQueuetest\set-event_attributes.dwl')]" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to sendMessageToQueue" doc:id="0e32e751-65ea-495b-bf49-6ed2394743ba" name="sendMessageToQueue"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="f23c1be7-ec92-4388-975c-a24e5982f5ba" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import sendMessageToQueuetest::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="receiveMessageFromQueue-test" doc:id="2d9aa702-24e3-43e0-8368-34a15ecd06fe" >
+		<munit:behavior >
+			<munit:set-event doc:name="Set Input" doc:id="6a773fe7-3ca0-4afd-ae3c-02a645dc47eb" >
+				<munit:payload value="#[output text/plain --- readUrl('classpath://receiveMessageFromQueuetest\set-event_payload.dwl')]" encoding="UTF-8" mediaType="text/plain" />
+				<munit:attributes value="#[readUrl('classpath://receiveMessageFromQueuetest\set-event_attributes.dwl')]" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to receiveMessageFromQueue" doc:id="820c4008-c22e-41fe-8462-fcace95b69e4" name="receiveMessageFromQueue"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="88947eca-30a8-4fba-a4a1-de6b7ae1bf89" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import receiveMessageFromQueuetest::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sendMessageToQueue-test1" doc:id="42bbd464-78a2-418d-adf1-9c8f9c643e96" >
+		<munit:behavior >
+			<munit:set-event doc:name="Set Input" doc:id="c0b75e30-aa3c-48de-9acd-d76773991fcf" >
+				<munit:payload value="#[readUrl('classpath://sendMessageToQueuetest1\set-event_payload.dwl')]" encoding="UTF-8" />
+				<munit:attributes value="#[readUrl('classpath://sendMessageToQueuetest1\set-event_attributes.dwl')]" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to sendMessageToQueue" doc:id="43cacbe3-96e5-4e56-9093-aebd6bd983e8" name="sendMessageToQueue"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="7b767210-483e-4285-bd28-7c32a9d2279f" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import sendMessageToQueuetest1::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

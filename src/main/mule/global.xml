@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:sqs="http://www.mulesoft.org/schema/mule/sqs"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/sqs http://www.mulesoft.org/schema/mule/sqs/current/mule-sqs.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="22f13a91-862e-4946-8f67-ca0f5149841d" >
+		<http:listener-connection host="0.0.0.0" port="${http.port}" />
+	</http:listener-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="e9d5fc69-c971-4cc0-a431-f6528f9c6870" file="config.yaml" />
+	<sqs:config name="Amazon_SQS_Configuration" doc:name="Amazon SQS Configuration" doc:id="51684239-022e-4e85-b863-dee32e869f46" >
+		<sqs:basic-connection testQueueArn="${sqs.testARN}" accessKey="${secure::sqs.accessKey}" secretKey="${secure::sqs.secretKey}" region="us-east-2" />
+	</sqs:config>
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="c627599c-1dba-44a1-ba25-6c94f9558942" file="config.yaml" key="Lakshay@12345678" />
+	<configuration doc:name="Configuration" doc:id="770473b2-e4f2-4943-aeb5-b1d794552872" defaultErrorHandler-ref="globalError_Handler" />
+	<error-handler name="globalError_Handler" doc:id="ab6644e4-4678-43b5-9a7e-e6f216c90ef4" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="4fe3131d-f000-4591-8012-3c8babea4d36" type="SQS:ACCESS_DENIED">
+			<set-variable value="403" doc:name="httpStatus" doc:id="fda39052-3dec-4007-b792-a41834864f5c" variableName="httpStatus"/>
+			<ee:transform doc:name="Transform Message" doc:id="72271eb2-59e5-4665-8114-0b3a0e851f3c" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Access Denied to Amazon SQS",
+	"status": vars.httpStatus
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="48c4fc92-a535-43de-a706-3eec2c53e203" type="SQS:INVALID_CREDENTIALS" when="401">
+			<set-variable value="401" doc:name="httpstatus" doc:id="d2fc06ea-652c-433d-a6b6-4ec4f3306965" variableName="httpstatus"/>
+			<ee:transform doc:name="Transform Message" doc:id="e68ac327-3290-4a17-bcbc-999c33d63c6b" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Unauthorized Access!",
+	"status": vars.httpStatus
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="840ff8e7-7e7b-4d75-b2b2-430f9217ef3a" type="SQS:CONNECTIVITY">
+			<set-variable value="404" doc:name="httpStatus" doc:id="d408f462-6657-4ce7-bd87-7accd16a1b5f" variableName="httpStatus" />
+			<ee:transform doc:name="Transform Message" doc:id="e937a48e-8180-480f-bf53-9ee0198ef323">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Connectivity Issue...",
+	"status": vars.httpStatus
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="463f8576-feae-4fcf-a3b6-759db1b9c232" type="ANY">
+			<set-variable value="500" doc:name="httpstatus" doc:id="46670dd4-dddd-4dc3-8d85-1fb20d715a39" variableName="httpstatus"/>
+			<ee:transform doc:name="Transform Message" doc:id="922ce9c9-c079-411b-9663-43eef7dbfa65" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Server Error. Please try again..",
+	"status": vars.httpStatus
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-propagate>
+	</error-handler>
+</mule>

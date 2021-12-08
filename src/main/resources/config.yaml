@@ -1,0 +1,10 @@
+http:
+  port: "8081"
+  
+sqs:
+  testARN: "arn:aws:sqs:us-east-2:197791734396:mySQSQueue"
+  accessKey: "![l7+hC708obXvszKpF7rAj4KqP2GDkMUODMWt5v7vNZM=]"
+  secretKey: "![8GXoNDbM+6uKA5OtlU0Cicgh3fwsn1t5s56IaISqMot6LW2tm2XUaE+/fhG5n5DC]"
+  queueName: "queue2"
+  queueURL: "https://sqs.us-east-2.amazonaws.com/197791734396/queue1"
+  
