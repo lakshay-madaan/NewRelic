@@ -41,7 +41,7 @@
 						<environment>${cloudhub.environment}</environment>
 						<applicationName>${cloudhub.app}</applicationName>
 						<businessGroup>${cloudhub.bg}</businessGroup>
-						<worker>${cloudhub.workers}</worker>
+						<worker>${cloudhub.worker}</worker>
 						<workerType>${cloudhub.workerType}</workerType>
 						<objectStoreV2>true</objectStoreV2>
 						<properties>
